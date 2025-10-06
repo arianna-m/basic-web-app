@@ -11,7 +11,9 @@ export default function QueryProcessor(query: string): string {
     return "Arianna";
   }
 
-  if (query.toLowerCase().includes("andrew id")) {
+  // Match "andrew id", "andrew ID", "Andrew ID", "andrewID", or "andrewid"
+  const andrewIdPattern = /\bandrew\s*id\b/i;
+  if (andrewIdPattern.test(query)) {
     return "marym2";
   }
 
