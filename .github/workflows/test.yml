@@ -1,0 +1,27 @@
+name: __BLANK 1__
+
+on:
+
+push:
+
+branches:
+
+- main
+
+jobs:
+
+__BLANK 2__:
+
+    runs-on: ubuntu-latest
+
+    name: __BLANK 3__
+
+    steps:
+
+    - uses: actions/checkout@v3
+
+    - uses: bahmutov/npm-install@v1
+
+    - run: npm run __BLANK 4__ (Run ESLint)
+
+    - run: __BLANK 5__ (Run Jest)
