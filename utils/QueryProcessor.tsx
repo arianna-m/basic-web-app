@@ -1,3 +1,20 @@
+// Helper function to parse numbers (both digits and written numbers)
+function parseNumber(input: string): number | null {
+  const num = parseInt(input);
+  if (!isNaN(num)) {
+    return num;
+  }
+  
+  const writtenNumbers: { [key: string]: number } = {
+    'zero': 0, 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+    'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+    'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14, 'fifteen': 15,
+    'sixteen': 16, 'seventeen': 17, 'eighteen': 18, 'nineteen': 19, 'twenty': 20
+  };
+  
+  return writtenNumbers[input.toLowerCase()] || null;
+}
+
 export default function QueryProcessor(query: string): string {
   if (query.toLowerCase().includes("shakespeare")) {
     return (
@@ -24,6 +41,40 @@ export default function QueryProcessor(query: string): string {
     const num1 = parseInt(additionMatch[1]);
     const num2 = parseInt(additionMatch[2]);
     return (num1 + num2).toString();
+  }
+
+  // Handle multiplication questions: "What is X times Y?" or "What is X multiplied by Y?"
+  const multiplicationPattern = /what\s+is\s+(\d+|[a-z]+)\s+(?:times|multiplied\s+by)\s+(\d+|[a-z]+)/i;
+  const multiplicationMatch = query.match(multiplicationPattern);
+  if (multiplicationMatch) {
+    const num1 = parseNumber(multiplicationMatch[1]);
+    const num2 = parseNumber(multiplicationMatch[2]);
+    if (num1 !== null && num2 !== null) {
+      return (num1 * num2).toString();
+    }
+  }
+
+  // Handle division questions: "What is X divided by Y?"
+  const divisionPattern = /what\s+is\s+(\d+|[a-z]+)\s+divided\s+by\s+(\d+|[a-z]+)/i;
+  const divisionMatch = query.match(divisionPattern);
+  if (divisionMatch) {
+    const num1 = parseNumber(divisionMatch[1]);
+    const num2 = parseNumber(divisionMatch[2]);
+    if (num1 !== null && num2 !== null) {
+      if (num2 === 0) {
+        return "Cannot divide by zero";
+      }
+      return (num1 / num2).toString();
+    }
+  }
+
+  // Handle exponent questions: "What is X to the power of Y?" or "What is X^Y?"
+  const exponentPattern = /what\s+is\s+(\d+)\s+(?:to\s+the\s+power\s+of|\^)\s+(\d+)/i;
+  const exponentMatch = query.match(exponentPattern);
+  if (exponentMatch) {
+    const num1 = parseInt(exponentMatch[1]);
+    const num2 = parseInt(exponentMatch[2]);
+    return Math.pow(num1, num2).toString();
   }
 
   // Handle "largest number" questions: "Which of the following numbers is the largest: X, Y, Z?"
