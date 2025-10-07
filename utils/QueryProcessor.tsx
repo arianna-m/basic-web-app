@@ -35,12 +35,25 @@ export default function QueryProcessor(query: string): string {
   }
 
   // Handle addition questions: "What is X plus Y?"
-  const additionPattern = /what\s+is\s+(\d+)\s+plus\s+(\d+)/i;
+  const additionPattern = /what\s+is\s+(\d+|[a-z]+)\s+plus\s+(\d+|[a-z]+)/i;
   const additionMatch = query.match(additionPattern);
   if (additionMatch) {
-    const num1 = parseInt(additionMatch[1]);
-    const num2 = parseInt(additionMatch[2]);
-    return (num1 + num2).toString();
+    const num1 = parseNumber(additionMatch[1]);
+    const num2 = parseNumber(additionMatch[2]);
+    if (num1 !== null && num2 !== null) {
+      return (num1 + num2).toString();
+    }
+  }
+
+  // Handle subtraction questions: "What is X minus Y?"
+  const subtractionPattern = /what\s+is\s+(\d+|[a-z]+)\s+minus\s+(\d+|[a-z]+)/i;
+  const subtractionMatch = query.match(subtractionPattern);
+  if (subtractionMatch) {
+    const num1 = parseNumber(subtractionMatch[1]);
+    const num2 = parseNumber(subtractionMatch[2]);
+    if (num1 !== null && num2 !== null) {
+      return (num1 - num2).toString();
+    }
   }
 
   // Handle multiplication questions: "What is X times Y?" or "What is X multiplied by Y?"
@@ -69,12 +82,14 @@ export default function QueryProcessor(query: string): string {
   }
 
   // Handle exponent questions: "What is X to the power of Y?" or "What is X^Y?"
-  const exponentPattern = /what\s+is\s+(\d+)\s+(?:to\s+the\s+power\s+of|\^)\s+(\d+)/i;
+  const exponentPattern = /what\s+is\s+(\d+|[a-z]+)\s+(?:to\s+the\s+power\s+of|\^)\s+(\d+|[a-z]+)/i;
   const exponentMatch = query.match(exponentPattern);
   if (exponentMatch) {
-    const num1 = parseInt(exponentMatch[1]);
-    const num2 = parseInt(exponentMatch[2]);
-    return Math.pow(num1, num2).toString();
+    const num1 = parseNumber(exponentMatch[1]);
+    const num2 = parseNumber(exponentMatch[2]);
+    if (num1 !== null && num2 !== null) {
+      return Math.pow(num1, num2).toString();
+    }
   }
 
   // Handle "largest number" questions: "Which of the following numbers is the largest: X, Y, Z?"
@@ -88,6 +103,17 @@ export default function QueryProcessor(query: string): string {
     return largest.toString();
   }
 
+  // Handle "smallest number" questions: "Which of the following numbers is the smallest: X, Y, Z?"
+  const smallestPattern = /which\s+of\s+the\s+following\s+numbers\s+is\s+the\s+smallest:\s*(\d+),\s*(\d+),\s*(\d+)/i;
+  const smallestMatch = query.match(smallestPattern);
+  if (smallestMatch) {
+    const num1 = parseInt(smallestMatch[1]);
+    const num2 = parseInt(smallestMatch[2]);
+    const num3 = parseInt(smallestMatch[3]);
+    const smallest = Math.min(num1, num2, num3);
+    return smallest.toString();
+  }
+
   // Handle "longest word" questions: "What is the longest word: word1, word2, word3?" or "Give me the biggest word: word1, word2, word3" or "Give me the longest word: word1, word2, word3" or "Give me the word with the most letters: word1, word2, word3"
   const longestWordPattern = /(?:what\s+is\s+the\s+longest\s+word|give\s+me\s+the\s+(?:biggest|longest)\s+word|give\s+me\s+the\s+word\s+with\s+the\s+most\s+letters):\s*([^?]+)/i;
   const longestWordMatch = query.match(longestWordPattern);
@@ -98,6 +124,51 @@ export default function QueryProcessor(query: string): string {
       current.length > longest.length ? current : longest
     );
     return longestWord;
+  }
+
+  // Handle "shortest word" questions: "What is the shortest word: word1, word2, word3?" or "Give me the shortest word: word1, word2, word3"
+  const shortestWordPattern = /(?:what\s+is\s+the\s+shortest\s+word|give\s+me\s+the\s+shortest\s+word):\s*([^?]+)/i;
+  const shortestWordMatch = query.match(shortestWordPattern);
+  if (shortestWordMatch) {
+    const wordsString = shortestWordMatch[1];
+    const words = wordsString.split(',').map(word => word.trim());
+    const shortestWord = words.reduce((shortest, current) => 
+      current.length < shortest.length ? current : shortest
+    );
+    return shortestWord;
+  }
+
+  // Handle square root questions: "What is the square root of X?"
+  const squareRootPattern = /what\s+is\s+the\s+square\s+root\s+of\s+(\d+|[a-z]+)/i;
+  const squareRootMatch = query.match(squareRootPattern);
+  if (squareRootMatch) {
+    const num = parseNumber(squareRootMatch[1]);
+    if (num !== null && num >= 0) {
+      return Math.sqrt(num).toString();
+    }
+  }
+
+  // Handle percentage questions: "What is X% of Y?"
+  const percentagePattern = /what\s+is\s+(\d+)\%\s+of\s+(\d+|[a-z]+)/i;
+  const percentageMatch = query.match(percentagePattern);
+  if (percentageMatch) {
+    const percentage = parseInt(percentageMatch[1]);
+    const num = parseNumber(percentageMatch[2]);
+    if (num !== null) {
+      return ((percentage / 100) * num).toString();
+    }
+  }
+
+  // Handle average questions: "What is the average of X, Y, Z?"
+  const averagePattern = /what\s+is\s+the\s+average\s+of\s*([^?]+)/i;
+  const averageMatch = query.match(averagePattern);
+  if (averageMatch) {
+    const numbersString = averageMatch[1];
+    const numbers = numbersString.split(',').map(num => parseNumber(num.trim())).filter(num => num !== null);
+    if (numbers.length > 0) {
+      const sum = numbers.reduce((acc, num) => acc + num, 0);
+      return (sum / numbers.length).toString();
+    }
   }
 
   return "";
