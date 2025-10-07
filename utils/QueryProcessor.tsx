@@ -176,7 +176,7 @@ export default function QueryProcessor(query: string): string {
   const averageMatch = query.match(averagePattern);
   if (averageMatch) {
     const numbersString = averageMatch[1];
-    const numbers = numbersString.split(',').map(num => parseNumber(num.trim())).filter(num => num !== null);
+    const numbers = numbersString.split(',').map(num => parseNumber(num.trim())).filter((num): num is number => num !== null);
     if (numbers.length > 0) {
       const sum = numbers.reduce((acc, num) => acc + num, 0);
       return (sum / numbers.length).toString();
@@ -188,7 +188,7 @@ export default function QueryProcessor(query: string): string {
   const primeMatch = query.match(primePattern);
   if (primeMatch) {
     const numbersString = primeMatch[1];
-    const numbers = numbersString.split(',').map(num => parseNumber(num.trim())).filter(num => num !== null);
+    const numbers = numbersString.split(',').map(num => parseNumber(num.trim())).filter((num): num is number => num !== null);
     const primes = numbers.filter(num => isPrime(num));
     if (primes.length > 0) {
       return primes[0].toString(); // Return the first prime found
@@ -200,7 +200,7 @@ export default function QueryProcessor(query: string): string {
   const biggestPrimeMatch = query.match(biggestPrimePattern);
   if (biggestPrimeMatch) {
     const numbersString = biggestPrimeMatch[1];
-    const numbers = numbersString.split(',').map(num => parseNumber(num.trim())).filter(num => num !== null);
+    const numbers = numbersString.split(',').map(num => parseNumber(num.trim())).filter((num): num is number => num !== null);
     const primes = numbers.filter(num => isPrime(num));
     if (primes.length > 0) {
       return Math.max(...primes).toString();
@@ -212,7 +212,7 @@ export default function QueryProcessor(query: string): string {
   const notPrimeMatch = query.match(notPrimePattern);
   if (notPrimeMatch) {
     const numbersString = notPrimeMatch[1];
-    const numbers = numbersString.split(',').map(num => parseNumber(num.trim())).filter(num => num !== null);
+    const numbers = numbersString.split(',').map(num => parseNumber(num.trim())).filter((num): num is number => num !== null);
     const nonPrimes = numbers.filter(num => !isPrime(num));
     if (nonPrimes.length > 0) {
       return nonPrimes[0].toString(); // Return the first non-prime found
