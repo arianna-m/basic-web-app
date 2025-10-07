@@ -15,6 +15,18 @@ function parseNumber(input: string): number | null {
   return writtenNumbers[input.toLowerCase()] || null;
 }
 
+// Helper function to check if a number is prime
+function isPrime(num: number): boolean {
+  if (num < 2) return false;
+  if (num === 2) return true;
+  if (num % 2 === 0) return false;
+  
+  for (let i = 3; i <= Math.sqrt(num); i += 2) {
+    if (num % i === 0) return false;
+  }
+  return true;
+}
+
 export default function QueryProcessor(query: string): string {
   if (query.toLowerCase().includes("shakespeare")) {
     return (
@@ -168,6 +180,42 @@ export default function QueryProcessor(query: string): string {
     if (numbers.length > 0) {
       const sum = numbers.reduce((acc, num) => acc + num, 0);
       return (sum / numbers.length).toString();
+    }
+  }
+
+  // Handle prime number questions: "Which of the following numbers is a prime number: X, Y, Z?" or "Which is a prime number: X, Y, Z?"
+  const primePattern = /which\s+(?:of\s+the\s+following\s+numbers\s+)?is\s+(?:a\s+)?prime\s+number:\s*([^?]+)/i;
+  const primeMatch = query.match(primePattern);
+  if (primeMatch) {
+    const numbersString = primeMatch[1];
+    const numbers = numbersString.split(',').map(num => parseNumber(num.trim())).filter(num => num !== null);
+    const primes = numbers.filter(num => isPrime(num));
+    if (primes.length > 0) {
+      return primes[0].toString(); // Return the first prime found
+    }
+  }
+
+  // Handle biggest prime questions: "Which of the following numbers is the biggest prime number: X, Y, Z?" or "Which is the biggest prime number: X, Y, Z?"
+  const biggestPrimePattern = /which\s+(?:of\s+the\s+following\s+numbers\s+)?is\s+the\s+biggest\s+prime\s+number:\s*([^?]+)/i;
+  const biggestPrimeMatch = query.match(biggestPrimePattern);
+  if (biggestPrimeMatch) {
+    const numbersString = biggestPrimeMatch[1];
+    const numbers = numbersString.split(',').map(num => parseNumber(num.trim())).filter(num => num !== null);
+    const primes = numbers.filter(num => isPrime(num));
+    if (primes.length > 0) {
+      return Math.max(...primes).toString();
+    }
+  }
+
+  // Handle not prime questions: "Which of the following numbers is not a prime number: X, Y, Z?" or "Which one isn't a prime number: X, Y, Z?"
+  const notPrimePattern = /which\s+(?:of\s+the\s+following\s+numbers\s+)?(?:one\s+)?(?:is\s+not|isn't)\s+(?:a\s+)?prime\s+number:\s*([^?]+)/i;
+  const notPrimeMatch = query.match(notPrimePattern);
+  if (notPrimeMatch) {
+    const numbersString = notPrimeMatch[1];
+    const numbers = numbersString.split(',').map(num => parseNumber(num.trim())).filter(num => num !== null);
+    const nonPrimes = numbers.filter(num => !isPrime(num));
+    if (nonPrimes.length > 0) {
+      return nonPrimes[0].toString(); // Return the first non-prime found
     }
   }
 
