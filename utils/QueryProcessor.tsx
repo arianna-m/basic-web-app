@@ -37,5 +37,17 @@ export default function QueryProcessor(query: string): string {
     return largest.toString();
   }
 
+  // Handle "longest word" questions: "What is the longest word: word1, word2, word3?" or "Give me the biggest word: word1, word2, word3" or "Give me the longest word: word1, word2, word3" or "Give me the word with the most letters: word1, word2, word3"
+  const longestWordPattern = /(?:what\s+is\s+the\s+longest\s+word|give\s+me\s+the\s+(?:biggest|longest)\s+word|give\s+me\s+the\s+word\s+with\s+the\s+most\s+letters):\s*([^?]+)/i;
+  const longestWordMatch = query.match(longestWordPattern);
+  if (longestWordMatch) {
+    const wordsString = longestWordMatch[1];
+    const words = wordsString.split(',').map(word => word.trim());
+    const longestWord = words.reduce((longest, current) => 
+      current.length > longest.length ? current : longest
+    );
+    return longestWord;
+  }
+
   return "";
 }
